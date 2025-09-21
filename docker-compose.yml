@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: task_management_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: task_management
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  api:
+    build: .
+    container_name: task_management_api
+    environment:
+      - DATABASE_URL=mysql+pymysql://root:password@mysql:3306/task_management
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    volumes:
+      - .:/app
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
